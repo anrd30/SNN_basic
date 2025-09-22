@@ -23,6 +23,7 @@ tmp/data/MNIST/
 *.pt
 checkpoints/
 
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
