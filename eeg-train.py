@@ -6,12 +6,12 @@ from torch.utils.data import TensorDataset, DataLoader
 from rnn.rnn_baseline import RNNBaseline
 from eeg_preprocessing import load_bci_gdf_files
 from sklearn.model_selection import train_test_split
-
+from imblearn.over_sampling import RandomOverSampler
 # Hyperparameters
 SEQ_TMIN = 0.0
 SEQ_TMAX = 4.0
 BATCH_SIZE = 32
-EPOCHS = 100
+EPOCHS = 25
 LR = 1e-3
 HIDDEN_DIM = 256
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,19 +36,32 @@ def main():
     print("Epochs loaded:", X.shape, "labels:", torch.unique(y))
     print("Class distribution:", torch.bincount(y))
 
+
+    X_flat = X.reshape(X.shape[0], -1).numpy()
+    y_np = y.numpy()
+
+    # Apply oversampling
+    ros = RandomOverSampler(random_state=42)
+    X_resampled, y_resampled = ros.fit_resample(X_flat, y_np)
+
+# Reshape X back to original shape
+    X_resampled = torch.tensor(X_resampled).view(-1, X.shape[1], X.shape[2])
+    y_resampled = torch.tensor(y_resampled)
+
     # Weighted loss
-    class_counts = torch.bincount(y)
+    '''class_counts = torch.bincount(y)
     weights = 1.0 / (class_counts.float() + 1e-6)
     weights = weights / weights.sum() * len(class_counts)
-    criterion = nn.CrossEntropyLoss(weight=weights.to(DEVICE))
+    criterion = nn.CrossEntropyLoss(weight=weights.to(DEVICE))'''
+    criterion = nn.CrossEntropyLoss()
 
     n_channels = X.shape[2]
     n_classes = int(torch.unique(y).numel())
 
     # Train/test split
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    X_resampled, y_resampled, test_size=0.2, random_state=42, stratify=y_resampled
+)
     train_dataset = TensorDataset(X_train, y_train)
     test_dataset = TensorDataset(X_test, y_test)
 
