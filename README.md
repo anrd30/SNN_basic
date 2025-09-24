@@ -6,6 +6,7 @@
 ## Overview
 This project demonstrates the conversion of a standard Recurrent Neural Network (RNN) to a Spiking Neural Network (SNN) using a vectorized Leaky Integrate-and-Fire (LIF) model.  
 It includes a comparison of **compute cost**, **memory usage**, **spike activity**, and **prediction accuracy** between the RNN and the SNN.
+CHECK BRANCHES FOR EEG DATA CLASSIFICATION.
 
 ---
 
